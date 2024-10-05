@@ -126,6 +126,7 @@ class TestAccountService(TestCase):
 
     # ADD YOUR TEST CASES HERE ...
 
+    ## Testing Read Account for both happy and sad path
     def test_read_account(self):
         """It should Read and Account when sending an account id"""
         accounts = self._create_accounts(2)
@@ -144,3 +145,15 @@ class TestAccountService(TestCase):
 
         response = self.client.get(f"{BASE_URL}/{id}")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    ## Test List Account
+    def test_list_accounts(self):
+        """It should return a list of all the accounts"""
+        num_accts = random.randint(3, 9)
+        accounts = self._create_accounts(num_accts)
+        response = self.client.get(f"{BASE_URL}")
+        list_accts = response.get_json()
+        self.assertEqual(len(list_accts), num_accts)
+        for acct in list_accts:
+            self.assertIn(Account().deserialize(acct), accounts)
+                         
