@@ -5,7 +5,7 @@ This microservice handles the lifecycle of Accounts
 """
 # pylint: disable=unused-import
 from flask import jsonify, request, make_response, abort, url_for   # noqa; F401
-from service.models import Account
+from service.models import Account, DataValidationError
 from service.common import status  # HTTP Status Codes
 from . import app  # Import Flask application
 
@@ -95,7 +95,21 @@ def read_account(id):
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
 
-# ... place you code here to UPDATE an account ...
+@app.route("/accounts/<int:id>", methods=["PUT"])
+def update_account(id):
+    """
+    Update an Account
+    This endpoint will update an Account with the give ID
+    """
+    app.logger.info(f"Request to update the account with ID {id}.")
+    account = Account.find(id)
+    if not account:
+        return f"Account with ID {id} is not found", status.HTTP_404_NOT_FOUND
+
+    account = Account().deserialize(request.get_json())   
+    account.id = id
+    account.update()
+    return account.serialize(), status.HTTP_200_OK
 
 
 ######################################################################

@@ -155,3 +155,51 @@ class TestAccountService(TestCase):
         list_accts = response.get_json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(list_accts), num_accts)
+
+    # Test update an Account
+    def test_update_accout(self):
+        """It should update Account 1 to new information"""
+        accounts = self._create_accounts(2)
+        new_acct = AccountFactory()
+        new_acct_json = new_acct.serialize()
+
+        id = accounts[1].id
+        response = self.client.put(f"{BASE_URL}/{id}", json=new_acct_json)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_acct_json = response.get_json()
+        for key in new_acct_json:
+            if not key == "id":
+                self.assertEqual(new_acct_json[key], updated_acct_json[key])
+        
+    # Test update failed with ID not exists
+    def test_update_no_id(self):
+        """It should return with ID not found error"""
+        accounts = self._create_accounts(9)
+        new_acct = AccountFactory()
+        new_acct_json = new_acct.serialize()
+
+        while True:
+            id = random.randint(0, 100)
+            if id not in (account.id for account in accounts):
+                break
+        
+        response = self.client.put(f"{BASE_URL}/{id}", json=new_acct_json)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Test update failed with invalid data
+    def test_update_invalid_data(self):
+        """It should return DataValidation error"""
+        accounts = self._create_accounts(9)
+        new_acct = AccountFactory()
+        new_acct_json = new_acct.serialize()
+
+        # this should raise a type error 
+        response = self.client.put(f"{BASE_URL}/{accounts[1].id}", json=[])
+        app.logger.info(f"got error {response.data}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # this should raise a key error
+        del new_acct_json["email"]
+        response = self.client.put(f"{BASE_URL}/{accounts[1].id}", json=new_acct_json)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
