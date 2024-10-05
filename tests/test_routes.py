@@ -7,6 +7,7 @@ Test cases can be run with the following:
 """
 import os
 import logging
+import random
 from unittest import TestCase
 from tests.factories import AccountFactory
 from service.common import status  # HTTP Status Codes
@@ -124,3 +125,22 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     # ADD YOUR TEST CASES HERE ...
+
+    def test_read_account(self):
+        """It should Read and Account when sending an account id"""
+        accounts = self._create_accounts(2)
+
+        response = self.client.get(f"{BASE_URL}/{accounts[1].id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(accounts[1].serialize(), response.get_json())
+    
+    def test_read_account_failed(self):
+        """It should return 404 when an invalid ID is requested"""
+        accounts = self._create_accounts(2)
+        while True:
+            id = random.randint(0, 100)
+            if id not in (account.id for account in accounts):
+                break
+
+        response = self.client.get(f"{BASE_URL}/{id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
