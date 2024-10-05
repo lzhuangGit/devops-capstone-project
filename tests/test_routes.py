@@ -171,3 +171,35 @@ class TestAccountService(TestCase):
             if not key == "id":
                 self.assertEqual(new_acct_json[key], updated_acct_json[key])
         
+    # Test update failed with ID not exists
+    def test_update_no_id(self):
+        """It should return with ID not found error"""
+        accounts = self._create_accounts(9)
+        new_acct = AccountFactory()
+        new_acct_json = new_acct.serialize()
+
+        while True:
+            id = random.randint(0, 100)
+            if id not in (account.id for account in accounts):
+                break
+        
+        response = self.client.put(f"{BASE_URL}/{id}", json=new_acct_json)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # Test update failed with invalid data
+    def test_update_invalid_data(self):
+        """It should return DataValidation error"""
+        accounts = self._create_accounts(9)
+        new_acct = AccountFactory()
+        new_acct_json = new_acct.serialize()
+
+        # this should raise a type error 
+        response = self.client.put(f"{BASE_URL}/{accounts[1].id}", json=[])
+        app.logger.info(f"got error {response.data}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # this should raise a key error
+        del new_acct_json["email"]
+        response = self.client.put(f"{BASE_URL}/{accounts[1].id}", json=new_acct_json)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
