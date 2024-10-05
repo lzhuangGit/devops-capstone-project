@@ -57,18 +57,26 @@ def create_accounts():
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
 
+
 ######################################################################
 # LIST ALL ACCOUNTS
 ######################################################################
+@app.route("/accounts", methods=["GET"])
+def list_accounts():
+    """
+    List all Accounts
+    This endpoint will return a list of all the accounts as a dictionary
+    """
+    app.logger.info("Request to list all accounts")
 
-# ... place you code here to LIST accounts ...
+    acct_list = [account.serialize() for account in Account.all()]
+    app.logger.info(f"Return a list of {len(acct_list)} Accounts.")
+    return jsonify(acct_list), status.HTTP_200_OK
 
 
 ######################################################################
 # READ AN ACCOUNT
 ######################################################################
-
-# ... place you code here to READ an account ...
 @app.route("/accounts/<id>", methods=["GET"])
 def read_account(id):
     """
@@ -79,8 +87,9 @@ def read_account(id):
     found_account = Account().find(id)
     if not found_account:
         return f"Account with ID {id} could not be found", status.HTTP_404_NOT_FOUND
-    
+
     return found_account.serialize(), status.HTTP_200_OK
+
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
@@ -99,8 +108,6 @@ def read_account(id):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
-
 def check_content_type(media_type):
     """Checks that the media type is correct"""
     content_type = request.headers.get("Content-Type")
