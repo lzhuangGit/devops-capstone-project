@@ -126,9 +126,10 @@ def delete_account(id):
     account = Account.find(id)
     if not account:
         return f"Account with ID {id} is not found", status.HTTP_404_NOT_FOUND
-    
+
     account.delete()
     return "", status.HTTP_204_NO_CONTENT
+
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S

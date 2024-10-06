@@ -221,7 +221,13 @@ class TestAccountService(TestCase):
     # Test delete failed with ID not exists
     def test_delete_no_id(self):
         """Delete: it should return with ID not found error"""
-        accounts = self._create_accounts(2)
+        self._create_accounts(2)
 
         response = self.client.delete(f"{BASE_URL}/0")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # test error handler
+    def test_method_not_allowed(self):
+        """It should nto allow an illegal method call"""
+        response = self.client.delete(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
