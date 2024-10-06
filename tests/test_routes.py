@@ -173,7 +173,7 @@ class TestAccountService(TestCase):
 
     # Test update failed with ID not exists
     def test_update_no_id(self):
-        """It should return with ID not found error"""
+        """Update: it should return with ID not found error"""
         accounts = self._create_accounts(9)
         new_acct = AccountFactory()
         new_acct_json = new_acct.serialize()
@@ -208,12 +208,20 @@ class TestAccountService(TestCase):
         """It should delete the account with the ID"""
         num_account = random.randint(2, 9)
         accounts = self._create_accounts(num_account)
-        select = random.randint(1, num_account)
+        select = random.randint(1, num_account-1)
         id_2_delete = accounts[select].id
 
-        response = self.client.put(f"{BASE_URL}/{id_2_delete}")
+        response = self.client.delete(f"{BASE_URL}/{id_2_delete}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         response = self.client.get(BASE_URL)
         accts = response.get_json()
         self.assertEqual(len(accts), num_account-1)
+
+    # Test delete failed with ID not exists
+    def test_delete_no_id(self):
+        """Delete: it should return with ID not found error"""
+        accounts = self._create_accounts(2)
+
+        response = self.client.delete(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
